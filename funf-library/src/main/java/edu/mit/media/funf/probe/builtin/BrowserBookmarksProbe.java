@@ -33,6 +33,7 @@ import java.util.Map;
 
 @Schedule.DefaultSchedule(interval=604800)
 @RequiredPermissions(android.Manifest.permission.READ_HISTORY_BOOKMARKS)
+// FIXME: require  com.android.browser.permission.READ_HISTORY_BOOKMARKS on some phones (maybe for Chrome)
 public class BrowserBookmarksProbe extends DatedContentProviderProbe {
 
 	@Override

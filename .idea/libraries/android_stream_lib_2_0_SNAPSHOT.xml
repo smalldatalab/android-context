@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="android-stream-lib-2.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/funf/build/exploded-aar/org.ohmage/android-stream-lib/2.0-SNAPSHOT/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/funf/build/exploded-aar/org.ohmage/android-stream-lib/2.0-SNAPSHOT/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

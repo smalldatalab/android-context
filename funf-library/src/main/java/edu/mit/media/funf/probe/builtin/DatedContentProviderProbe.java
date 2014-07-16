@@ -67,7 +67,7 @@ public abstract class DatedContentProviderProbe extends ContentProviderProbe imp
 				projection, // TODO: different platforms have different fields supported for content providers, need to resolve this
 				dateFilter, 
 				dateFilterParams,
-                dateColumn + " DESC");
+                dateColumn + " ASC");
 	}
 	
 	protected abstract Uri getContentProviderUri();

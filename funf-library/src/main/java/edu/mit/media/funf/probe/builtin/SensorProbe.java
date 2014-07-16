@@ -40,6 +40,8 @@ import edu.mit.media.funf.probe.builtin.ProbeKeys.SensorKeys;
 import edu.mit.media.funf.time.TimeUtil;
 import edu.mit.media.funf.util.LogUtil;
 
+import java.math.BigDecimal;
+
 @Schedule.DefaultSchedule(interval=SensorProbe.DEFAULT_PERIOD, duration=SensorProbe.DEFAULT_DURATION)
 public abstract class SensorProbe extends Base implements ContinuousProbe, SensorKeys {
 	
@@ -70,7 +72,15 @@ public abstract class SensorProbe extends Base implements ContinuousProbe, Senso
 			@Override
 			public void onSensorChanged(SensorEvent event) {
 				JsonObject data = new JsonObject();
-				data.addProperty(TIMESTAMP, TimeUtil.uptimeNanosToTimestamp(event.timestamp));
+                // see issue: https://code.google.com/p/android/issues/detail?id=56561
+
+                // if the timestamp is smaller than the timestamp of 2000-1-1, then it must contains the uptime of
+                // the system instead of real epoch timestamp
+                if(event.timestamp < 946684800000000000L) {
+                    data.addProperty(TIMESTAMP, TimeUtil.uptimeNanosToTimestamp(event.timestamp));
+                }else{
+                    data.addProperty(TIMESTAMP, new BigDecimal(event.timestamp).divide(new BigDecimal(1000 * 1000 * 1000)));
+                }
 				data.addProperty(ACCURACY, event.accuracy);
 				int valuesLength = Math.min(event.values.length, valueNames.length);
 				for (int i = 0; i < valuesLength; i++) {

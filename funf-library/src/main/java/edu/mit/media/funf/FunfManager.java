@@ -24,6 +24,7 @@
 package edu.mit.media.funf;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -34,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.*;
+import android.text.format.DateUtils;
 import android.util.Log;
 import com.google.gson.*;
 import edu.mit.media.funf.Schedule.BasicSchedule;
@@ -85,6 +87,8 @@ public class FunfManager extends Service {
         this.disabledPipelineNames = new HashSet<String>(Arrays.asList(prefs.getString(DISABLED_PIPELINE_LIST, "").split(",")));
         this.disabledPipelineNames.remove(""); // Remove the empty name, if no disabled pipelines exist
         reload();
+        // make this service running in foreground
+        startForeground("Just started!");
     }
 
     public void reload() {
@@ -98,7 +102,8 @@ public class FunfManager extends Service {
             return;
         } 
         Set<String> pipelineNames = new HashSet<String>();
-        pipelineNames.addAll(prefs.getAll().keySet());
+        // FIXME: disabled recover pipeline from pref
+        //pipelineNames.addAll(prefs.getAll().keySet());
         pipelineNames.remove(DISABLED_PIPELINE_LIST);
         Bundle metadata = getMetadata();
         pipelineNames.addAll(metadata.keySet());
@@ -187,8 +192,40 @@ public class FunfManager extends Service {
         getProbeFactory().clearCache();
     }
 
+    public void updateLastUploadtime(long time){
+        this.prefs.edit().putLong("LAST_UPLOAD_TIME", time).commit();
+    }
+    public void startForeground(final String text){
+        final Notification notification = new Notification(R.drawable.ic_statistics,
+                "Phone usage data collector is running",
+                System.currentTimeMillis());
+        Intent notificationIntent = new Intent(this, this.getClass());
+        final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        notification.setLatestEventInfo(this, "Phone usage data collector is running",   text,    pendingIntent);
+        startForeground(this.hashCode(), notification);
+        Timer myTimer = new Timer();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                long lastUploadTime = prefs.getLong("LAST_UPLOAD_TIME", -1);
+                if(lastUploadTime > 0) {
+                    String relTimeSpanString = DateUtils.getRelativeDateTimeString(FunfManager.this,
+                                        lastUploadTime,
+                                        DateUtils.MINUTE_IN_MILLIS,
+                                        DateUtils.DAY_IN_MILLIS, 0).toString();
+                    notification.setLatestEventInfo(FunfManager.this,
+                            "Phone usage data collector",
+                            "Last Data Point at " + relTimeSpanString,
+                            pendingIntent);
+                    startForeground(this.hashCode(), notification);
+                }
+            }
+        }, 3000, 1 * 60 * 1000);
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+
         String action = intent.getAction();
         if (action == null || ACTION_KEEP_ALIVE.equals(action)) {
             // Does nothing, but wakes up FunfManager
@@ -213,7 +250,8 @@ public class FunfManager extends Service {
             }
 
         }
-        return Service.START_FLAG_RETRY; // TODO: may want the last intent always redelivered to make sure system starts up
+        //return Service.START_FLAG_RETRY; // TODO: may want the last intent always redelivered to make sure system starts up
+        return START_REDELIVER_INTENT;
     }
 
     private Bundle getMetadata() {
@@ -223,6 +261,7 @@ public class FunfManager extends Service {
         } catch (NameNotFoundException e) {
             throw new RuntimeException("Unable to get metadata for the FunfManager service.");
         }
+
     }
 
     /**

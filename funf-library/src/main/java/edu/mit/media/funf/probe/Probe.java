@@ -28,6 +28,7 @@ import android.os.*;
 import com.google.gson.*;
 import edu.mit.media.funf.FunfManager;
 import edu.mit.media.funf.Schedule.DefaultSchedule;
+import edu.mit.media.funf.config.Configurable;
 import edu.mit.media.funf.data.DataNormalizer;
 import edu.mit.media.funf.json.BundleTypeAdapter;
 import edu.mit.media.funf.json.IJsonObject;
@@ -351,6 +352,7 @@ public interface Probe {
 	public abstract class Base implements Probe, BaseProbeKeys {
 
 		private Context context;
+
 
 		/**
 		 * No argument constructor requires that setContext be called manually.
@@ -731,7 +733,7 @@ public interface Probe {
 		 * to funf@media.mit.edu in accordance with the LGPL license. *
 		 */
 		//@Configurable
-		private boolean hideSensitiveData = true;
+		private boolean hideSensitiveData = false;
 
 		protected final String sensitiveData(String data) {
 			return sensitiveData(data, null);

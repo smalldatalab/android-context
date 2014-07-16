@@ -10,10 +10,16 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import edu.mit.media.funf.FunfManager;
+import org.json.JSONObject;
+import org.ohmage.streams.StreamContract;
+import org.ohmage.streams.StreamPointBuilder;
+import org.ohmage.streams.StreamWriter;
 
 
 public class MainActivity extends ActionBarActivity {
     private FunfManager manager;
+    private StreamPointBuilder mStreamPointBuilder;
+    private StreamWriter mWriter;
     private ServiceConnection conn = new ServiceConnection() {
 
         @Override
@@ -32,7 +38,9 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        bindService(new Intent(this, FunfManager.class), conn, Context.BIND_AUTO_CREATE);
+        startService(new Intent(this, FunfManager.class));
+
+
     }
 
 
