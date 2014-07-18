@@ -1,6 +1,9 @@
 package org.ohmage.funf;
 
+import android.annotation.TargetApi;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import com.google.gson.JsonElement;
@@ -79,6 +82,7 @@ public class OhmageDataUploader implements Probe.DataListener{
         @Override
         public void onDataCompleted(IJsonObject probeConfig, JsonElement newCheckpoint) {
             if(newCheckpoint != null) {
+                // convert from second to millis
                 Long newCheckpointLong = newCheckpoint.getAsBigDecimal().multiply(new BigDecimal(1000)).longValue();
                 // commit new checkpoint
                 checkpointStore.edit().putLong(key, newCheckpointLong).commit();
@@ -96,6 +100,7 @@ public class OhmageDataUploader implements Probe.DataListener{
      *               id and version.
      * @param handler handler for upload task.
      */
+        @TargetApi(Build.VERSION_CODES.GINGERBREAD)
         public OhmageDataUploader(OhmageFunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler)      {
             this.manager = manager;
             this.stream = stream;
@@ -105,7 +110,18 @@ public class OhmageDataUploader implements Probe.DataListener{
             this.checkpointStore = manager.getSharedPreferences("checkpoints", 0);
             // use the serialization of the stream object as the key to access the stored checkpoint
             this.key = manager.getGson().toJson(stream);
-            this.prevCheckpoint = checkpointStore.getLong(key, -1);
+            // get app installed time
+            long appInstalledDate = -1;
+            try {
+                appInstalledDate = manager
+                        .getPackageManager()
+                        .getPackageInfo(manager.getPackageName(), 0)
+                        .firstInstallTime;
+            } catch (Exception e) {
+                Log.e("Checkpoint", "Cannot get package install date");
+            }
+            // get previous checkpoint or set it to be the app installed time
+            this.prevCheckpoint = checkpointStore.getLong(key, appInstalledDate);
 
         }
 }
