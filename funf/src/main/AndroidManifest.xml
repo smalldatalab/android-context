@@ -20,21 +20,9 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-        <receiver
-            android:name="edu.mit.media.funf.Launcher"
-            android:enabled="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.BATTERY_CHANGED" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.DOCK_EVENT" />
-                <action android:name="android.intent.action.SCREEN_OFF" />
-                <action android:name="android.intent.action.ACTION_SCREEN_ON" />
-                <action android:name="android.intent.action.USER_PRESENT" />
-            </intent-filter>
-        </receiver>
+        android:theme="@style/DialogTheme" >
 
-        <service android:name="edu.mit.media.funf.FunfManager" >
+        <service android:name="org.ohmage.funf.OhmageFunfManager" >
             <intent-filter>
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -61,11 +49,16 @@
         </activity>
 
         <receiver
-            android:name="org.ohmage.funf.BootBroadcastReceiver"
+            android:name=".Launcher"
             android:enabled="true"
             android:exported="true" >
 			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED"/>
+				<action android:name="android.intent.action.BATTERY_CHANGED" />
+				<action android:name="android.intent.action.BOOT_COMPLETED" />
+				<action android:name="android.intent.action.DOCK_EVENT" />
+				<action android:name="android.intent.action.SCREEN_OFF" />
+				<action android:name="android.intent.action.ACTION_SCREEN_ON" />
+				<action android:name="android.intent.action.USER_PRESENT" />
 			</intent-filter>
         </receiver>
     </application>

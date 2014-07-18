@@ -21,13 +21,12 @@ import java.util.Date;
  * Created by changun on 7/18/14.
  */
 public class OhmageDataUploader implements Probe.DataListener{
-        final private FunfManager manager;
+        final private OhmageFunfManager manager;
         final SharedPreferences checkpointStore;
         final OhmageFunfPipeline.OhmageStream stream;
         final Long prevCheckpoint;
         final String key;
         final Handler handler;
-        // get stored prevCheckpoint (if any), notice that we don't update its value after the probe is running
 
         @Override
         public void onDataReceived(final IJsonObject probeConfig, final IJsonObject probeData) {
@@ -81,7 +80,7 @@ public class OhmageDataUploader implements Probe.DataListener{
         public void onDataCompleted(IJsonObject probeConfig, JsonElement newCheckpoint) {
             if(newCheckpoint != null) {
                 Long newCheckpointLong = newCheckpoint.getAsBigDecimal().multiply(new BigDecimal(1000)).longValue();
-                // commit prevCheckpoint
+                // commit new checkpoint
                 checkpointStore.edit().putLong(key, newCheckpointLong).commit();
                 // notice that, we don't update the prevCheckpoint field, as we cannot be sure if this call
                 // will occur before/or after the onDataReceived().
@@ -97,7 +96,7 @@ public class OhmageDataUploader implements Probe.DataListener{
      *               id and version.
      * @param handler handler for upload task.
      */
-        public OhmageDataUploader(FunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler)      {
+        public OhmageDataUploader(OhmageFunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler)      {
             this.manager = manager;
             this.stream = stream;
             this.handler = handler;

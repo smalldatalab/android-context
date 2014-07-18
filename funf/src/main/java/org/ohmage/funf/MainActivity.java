@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.view.Window;
 import edu.mit.media.funf.FunfManager;
 import org.json.JSONObject;
 import org.ohmage.streams.StreamContract;
@@ -17,28 +19,15 @@ import org.ohmage.streams.StreamWriter;
 
 
 public class MainActivity extends ActionBarActivity {
-    private FunfManager manager;
-    private StreamPointBuilder mStreamPointBuilder;
-    private StreamWriter mWriter;
-    private ServiceConnection conn = new ServiceConnection() {
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            manager = ((FunfManager.LocalBinder)service).getManager();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         setContentView(R.layout.activity_main);
-        startService(new Intent(this, FunfManager.class));
+        startService(new Intent(this, OhmageFunfManager.class));
 
 
     }

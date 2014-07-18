@@ -29,8 +29,6 @@ public class OhmageFunfPipeline implements Pipeline{
     private boolean enabled = false;
     private Looper looper;
     private Handler handler;
-    private FunfManager manager;
-    SharedPreferences checkpoints;
     static class OhmageStream{
         String id;
         int version;
@@ -43,11 +41,13 @@ public class OhmageFunfPipeline implements Pipeline{
 
         @Override
         public void onCreate(final FunfManager manager) {
+            if(!(manager instanceof OhmageFunfManager)){
+                throw new RuntimeException("ohmage funf pipeline only support ohmage funf manager");
+            }
             HandlerThread thread = new HandlerThread(getClass().getName());
             thread.start();
             this.looper = thread.getLooper();
             this.handler = new Handler(looper);
-            this.manager = manager;
 
             if (enabled == false) {
                 for (final OhmageStream stream : streams) {
@@ -56,7 +56,7 @@ public class OhmageFunfPipeline implements Pipeline{
                          continue;
                      }
                     // set up data uploader as the data listener
-                    OhmageDataUploader uploader = new OhmageDataUploader(manager, stream, handler);
+                    OhmageDataUploader uploader = new OhmageDataUploader((OhmageFunfManager)manager, stream, handler);
                     stream.source.setListener(uploader);
                     stream.source.start();
 

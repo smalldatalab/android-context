@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Ohmage-funf</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Contextual Data Collector</string>
+    <string name="greeting">Hi there!</string>
+	<string name="description">Thank you again for participating the study. This app collects your phone usage data and transforms them into potential contextual recall cues.</string>
+	<string name="status_bar">Contextual data collector is running</string>
+	<string name="status_title">Contextual data collector</string>
+
+	<string name="action_settings">Settings</string>
 	<!-- Some rule for data source definition
 		1. Do not ever specify "opportunistic" field. It dos not work.
 		2. Do not specify duration for those probes that ends itself. (for example, CallLogProbe)

@@ -5,12 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import edu.mit.media.funf.FunfManager;
 
-public class BootBroadcastReceiver extends BroadcastReceiver {
-    public BootBroadcastReceiver() {
+public class Launcher extends BroadcastReceiver {
+    public Launcher() {
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        context.startService(new Intent(context, FunfManager.class));
+        context.startService(new Intent(context, OhmageFunfManager.class));
     }
 }
