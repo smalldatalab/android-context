@@ -5,8 +5,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 	<!-- Some rule for data source definition
-		1. Do not ever specify opportunitfic field. It dos not work.
-		2. Do not specify duration if the probe will end itself. (for example, CallLogProbe)
+		1. Do not ever specify "opportunistic" field. It dos not work.
+		2. Do not specify duration for those probes that ends itself. (for example, CallLogProbe)
 		3. Use @probe instead of @type, which is deprecated.
 
 	-->
