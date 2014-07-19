@@ -3,7 +3,7 @@
 
     <string name="app_name">Contextual Data Collector</string>
     <string name="greeting">Hi there!</string>
-	<string name="description">Thank you again for participating the study. This app collects your phone usage data and transforms them into potential contextual recall cues.</string>
+	<string name="description">Thank you again for participating in our study. This app collects the phone usage data and transforms them into cues for contextual recall.</string>
 	<string name="status_bar">Contextual data collector is running</string>
 	<string name="status_title">Contextual data collector</string>
 
