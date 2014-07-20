@@ -44,6 +44,10 @@ public class OhmageFunfPipeline implements Pipeline{
             if(!(manager instanceof OhmageFunfManager)){
                 throw new RuntimeException("ohmage funf pipeline only support ohmage funf manager");
             }
+            // we need ohmage installed to proceed
+            if(!StreamContract.checkContentProviderExists(manager.getContentResolver())){
+                return;
+            }
             HandlerThread thread = new HandlerThread(getClass().getName());
             thread.start();
             this.looper = thread.getLooper();
@@ -74,13 +78,15 @@ public class OhmageFunfPipeline implements Pipeline{
 
         @Override
         public void onDestroy() {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    destroyDataSources();
-                    looper.quit();
-                }
-            });
+            if(handler != null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        destroyDataSources();
+                        looper.quit();
+                    }
+                });
+            }
 
         }
 

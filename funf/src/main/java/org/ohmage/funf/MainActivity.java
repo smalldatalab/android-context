@@ -1,9 +1,9 @@
 package org.ohmage.funf;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.content.*;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
@@ -28,27 +28,32 @@ public class MainActivity extends ActionBarActivity {
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         setContentView(R.layout.activity_main);
         startService(new Intent(this, OhmageFunfManager.class));
-
-
     }
 
+     @Override
+     protected void onStart(){
+         super.onStart();
+         // if ohmage is not installed, prompt user to install it.
+         if(!StreamContract.checkContentProviderExists(this.getContentResolver())){
+             // 1. Instantiate an AlertDialog.Builder with its constructor
+             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+             // 2. Chain together various setter methods to set the dialog characteristics
+             builder.setMessage("Please install ohmage. The ohmage is required to collect data.")
+                     .setTitle("Please install ohmage")
+                     .setCancelable(false)
+                     .setPositiveButton("Click here to install!", new DialogInterface.OnClickListener() {
+                         @Override
+                         public void onClick(DialogInterface dialogInterface, int i) {
+                             Intent intent = new Intent(Intent.ACTION_VIEW);
+                             intent.setData(Uri.parse("market://details?id=org.ohmage.app"));
+                             MainActivity.this.startActivity(intent);
+                         }
+                     });
+             // show dialog
+             builder.show();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+         }
+     }
+
 }

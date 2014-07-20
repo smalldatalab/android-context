@@ -24,12 +24,16 @@
 
         <service android:name="org.ohmage.funf.OhmageFunfManager" >
             <intent-filter>
+				<action android:name="android.intent.action.PACKAGE_INSTALL" />
+				<action android:name="android.intent.action.PACKAGE_ADDED" />
+
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.DOCK_EVENT" />
                 <action android:name="android.intent.action.SCREEN_OFF" />
                 <action android:name="android.intent.action.ACTION_SCREEN_ON" />
                 <action android:name="android.intent.action.USER_PRESENT" />
+				<data android:scheme="package"/>
             </intent-filter>
 
             <meta-data

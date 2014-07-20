@@ -2,13 +2,11 @@ package org.ohmage.funf;
 
 import android.annotation.TargetApi;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.mit.media.funf.FunfManager;
 import edu.mit.media.funf.json.IJsonObject;
 import edu.mit.media.funf.probe.Probe;
 import org.joda.time.DateTime;
@@ -69,7 +67,7 @@ public class OhmageDataUploader implements Probe.DataListener{
                                     .write(manager.getContentResolver());
 
                             // notify manager that we just upload one datapoint
-                            manager.updateLastUploadtime(new Date().getTime());
+                            manager.updateLastUploadTime(new Date().getTime());
                         } catch (Exception e) {
                             Log.e("OhmageUpload", e.toString());
                         }
