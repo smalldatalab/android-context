@@ -36,9 +36,10 @@ public class OhmageFunfManager extends FunfManager {
 
         startForeground(this.hashCode(), notification);
     }
-    private void startForeground(final String text){
+    private void startForeground(){
         // create a foreground notification
-        final Notification notification = new Notification(R.drawable.ic_statistics,
+        final Notification notification = new Notification(
+                R.drawable.ic_statistics, // pie_chart icon
                 getResources().getString(R.string.status_bar),
                 System.currentTimeMillis());
         // intent for launching main activity
@@ -46,13 +47,14 @@ public class OhmageFunfManager extends FunfManager {
         final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(this,
                 getResources().getString(R.string.status_title),   // notification title
-                text,                                              // notification content
+                "Just started!",                                   // notification content
                 pendingIntent);
 
         startForeground(this.hashCode(), notification);
 
     }
-    public void startPeriodicNotification(){
+    private void startPeriodicNotification(){
+      // start a period task to update the notification bar
       Timer myTimer = new Timer();
 
         // intent for launching main activity
@@ -77,22 +79,22 @@ public class OhmageFunfManager extends FunfManager {
             }
         }, 3000, 10 * 60 * 1000); // update notification every 10 mins
     }
-    private boolean ohmageInsalled(){
+    private boolean ohmageInstalled(){
         return StreamContract.checkContentProviderExists(OhmageFunfManager.this.getContentResolver());
     }
     @Override
     public void onCreate(){
         super.onCreate();
         // only show running notification when ohmage is installed
-        if(ohmageInsalled()) {
+        if(ohmageInstalled()) {
             // make this service running in foreground
-            startForeground("Just started!");
+            startForeground();
             startPeriodicNotification();
         }else{
             // notify user to install ohmage
             createOhmageNotInstalledNotification();
 
-            // register a broadcast receiver to check if ohmage is installed
+            // register a broadcast receiver to check if ohmage has get installed
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
             intentFilter.addAction(Intent.ACTION_PACKAGE_INSTALL);
@@ -100,10 +102,10 @@ public class OhmageFunfManager extends FunfManager {
             registerReceiver(new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                         if(ohmageInsalled()){
+                         if(ohmageInstalled()){
                              // reload pipelines when ohmage is installed
                              OhmageFunfManager.this.reload(); // restart the pipeline
-                             startForeground("Just started!");
+                             startForeground();
                              startPeriodicNotification();
                          }
                 }
