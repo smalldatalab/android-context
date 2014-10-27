@@ -36,7 +36,7 @@
 					"version" :1,
 					"source":{
       					"@probe": "edu.mit.media.funf.probe.builtin.SmsProbe" ,
-						"@schedule": {"interval": 3600, "strict": false}
+						"@scheduSle": {"interval": 3600, "strict": false}
 					}
     			},
 

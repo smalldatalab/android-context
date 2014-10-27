@@ -42,7 +42,7 @@ public class OhmageDataUploader implements Probe.DataListener{
 
                             // create timestamp
                             DateTime timestamp;
-                            if(data.has("timestamp")){ // for timestamped prevCheckpoint
+                            if(data.has("timestamp")){ // for timestamped probe data
                                 // convert epoch second to epoch millis
                                 long timestampLong = data.get("timestamp")
                                         .getAsBigDecimal()
