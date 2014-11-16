@@ -4,10 +4,10 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.+'
+        classpath 'com.android.tools.build:gradle:0.12.2'
     }
 }
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
@@ -37,6 +37,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:19.+'
-    compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT'
+    compile 'org.ohmage:android-stream-lib:2.0-SNAPSHOT@aar'
+    compile 'joda-time:joda-time:2.5'
     compile project(':funf-library')
 }

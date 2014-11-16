@@ -14,6 +14,17 @@
 		3. Use @probe instead of @type, which is deprecated.
 
 	-->
+    <!--
+    Unused Probe
+    				{
+					"id" : "956c1928-191c-408e-aee0-79662c5d9683",
+					"version" :1,
+					"source":{
+						"@probe": "edu.mit.media.funf.probe.builtin.LightSensorProbe" ,
+						"@schedule": {"interval": 1200, "duration": 10, "strict": false}
+					}
+				},
+    -->
     <string name="ohmage_pipeline">
         {
 			"@type": "org.ohmage.funf.OhmageFunfPipeline",
@@ -47,14 +58,6 @@
       					"@probe": "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
 					}
     			},
-				{
-					"id" : "956c1928-191c-408e-aee0-79662c5d9683",
-					"version" :1,
-					"source":{
-						"@probe": "edu.mit.media.funf.probe.builtin.LightSensorProbe" ,
-						"@schedule": {"interval": 1200, "duration": 10, "strict": false}
-					}
-				},
 		        {
 					"id" : "956c1928-191c-408e-aee0-79662c5d9683",
 					"version" :1,

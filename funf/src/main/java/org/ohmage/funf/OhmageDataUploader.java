@@ -58,7 +58,13 @@ public class OhmageDataUploader implements Probe.DataListener{
                                 // or use the current time
                                 timestamp = new DateTime();
                             }
-
+                            // add device information
+                            data.addProperty("device_info", Build.MODEL + ":" +
+                                    Build.PRODUCT + "-" + Build.TYPE
+                                            + " " + Build.VERSION.RELEASE
+                                            + " " + Build.ID
+                                            + " " + Build.VERSION.INCREMENTAL
+                                            + " " + Build.TAGS);
                             // submit data point to ohmage
                             new StreamPointBuilder(stream.id, stream.version)
                                     .withId()
@@ -79,7 +85,7 @@ public class OhmageDataUploader implements Probe.DataListener{
 
         @Override
         public void onDataCompleted(IJsonObject probeConfig, JsonElement newCheckpoint) {
-            if(newCheckpoint != null) {
+            if(newCheckpoint != null && !newCheckpoint.isJsonNull()) {
                 // convert from second to millis
                 Long newCheckpointLong = newCheckpoint.getAsBigDecimal().multiply(new BigDecimal(1000)).longValue();
                 // commit new checkpoint
