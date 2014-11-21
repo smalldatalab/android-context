@@ -58,14 +58,14 @@ public class SmsProbe extends DatedContentProviderProbe implements SmsKeys {
 		projectionMap.put(Sms.TYPE, intCell());
 		projectionMap.put(Sms.THREAD_ID, intCell());
 		projectionMap.put(Sms.ADDRESS, sensitiveStringCell()); // TODO: figure out if we have to normalize this first (maybe phone number)
-		projectionMap.put(Sms.PERSON_ID, longCell());
+		//projectionMap.put(Sms.PERSON_ID, longCell());
+        projectionMap.put(Sms.PERSON, personCell(getContext())); // query contacts db to get the per
 		projectionMap.put(Sms.DATE, longCell());
 		projectionMap.put(Sms.READ, booleanCell());
 		//projectionMap.put(Sms.SEEN, booleanCell()); //Not Supported on all devices
 		projectionMap.put(Sms.STATUS, intCell());
 		projectionMap.put(Sms.SUBJECT, sensitiveStringCell());
 		projectionMap.put(Sms.BODY, sensitiveStringCell());
-		projectionMap.put(Sms.PERSON, sensitiveStringCell());
 		projectionMap.put(Sms.PROTOCOL, intCell());
 		projectionMap.put(Sms.REPLY_PATH_PRESENT, booleanCell());
 		projectionMap.put(Sms.SERVICE_CENTER, stringCell());

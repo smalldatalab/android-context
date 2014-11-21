@@ -24,9 +24,11 @@
 package edu.mit.media.funf.probe.builtin;
 
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
+import android.provider.ContactsContract;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -199,10 +201,13 @@ public abstract class ContentProviderProbe extends ImpulseProbe {
 	protected static CursorCell<String> hashedStringCell(Context context) {
 		return new HashedCell(context, stringCell());
 	}
-	
+    protected static CursorCell<String> personCell(Context context) {
+        return new PersonCell(context);
+    }
 
 
-	public static abstract class CursorCell<T> {
+
+    public static abstract class CursorCell<T> {
 		public abstract T getData(Cursor cursor, int columnIndex);
 		public T getData(Cursor cursor, String columnName) {
 			int index = cursor.getColumnIndex(columnName);
@@ -310,6 +315,33 @@ public abstract class ContentProviderProbe extends ImpulseProbe {
 				return (value == null) ? "" : HashUtil.hashString(context, String.valueOf(value));
 			}
 		}
+
+
+        public static class PersonCell extends CursorCell<String>{
+            final Context context;
+
+            public PersonCell(Context context) {
+                this.context = context;
+            }
+
+            public String getData(Cursor cursor, int columnIndex) {
+                Object value = cursor.getInt(columnIndex);
+                return getContactName(String.valueOf(value), context);
+            }
+            private String getContactName(String contactId, Context context) {
+                ContentResolver mResolver = context.getContentResolver();
+                String[] projection = new String[] { ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY};
+                Cursor cursor = mResolver.query(ContactsContract.RawContacts.CONTENT_URI, projection,
+                        ContactsContract.RawContacts._ID + "=?", new String[] { contactId }, null);
+                String name = "";
+                if (cursor.moveToFirst()) {
+                    name = cursor.getString(0);
+                }
+
+                cursor.close();
+                return name;
+            }
+        }
 	}
 
 }

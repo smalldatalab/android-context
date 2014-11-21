@@ -49,7 +49,7 @@ public class OhmageDataUploader implements Probe.DataListener{
                                         .multiply(new BigDecimal(1000)).longValue();
                                 if(timestampLong <= prevCheckpoint){
                                     //do not submit the data point whose time is before the prevCheckpoint
-                                    Log.i("OhmageUpload", "Skip data point before prevCheckpoint " + probeConfig);
+                                    //Log.i("OhmageUpload", "Skip data point before prevCheckpoint " + probeConfig);
                                     return;
                                 }
                                 timestamp = new DateTime(timestampLong);
