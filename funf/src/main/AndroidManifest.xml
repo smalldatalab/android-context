@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.ohmage.funf" >
 
+    <!-- Google Plus Integration -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.BATTERY_STATS" />
     <uses-permission android:name="android.permission.READ_HISTORY_BOOKMARKS" />
@@ -21,19 +24,22 @@
         android:icon="@drawable/ic_statistics"
         android:label="@string/app_name"
         android:theme="@style/DialogTheme" >
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
-        <service android:name="org.ohmage.funf.OhmageFunfManager" >
+        <service android:name=".OhmageFunfManager" >
             <intent-filter>
-				<action android:name="android.intent.action.PACKAGE_INSTALL" />
-				<action android:name="android.intent.action.PACKAGE_ADDED" />
-
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.DOCK_EVENT" />
                 <action android:name="android.intent.action.SCREEN_OFF" />
                 <action android:name="android.intent.action.ACTION_SCREEN_ON" />
                 <action android:name="android.intent.action.USER_PRESENT" />
-				<data android:scheme="package"/>
+
+                <data android:scheme="package" />
             </intent-filter>
 
             <meta-data
@@ -42,7 +48,7 @@
         </service>
 
         <activity
-            android:name="org.ohmage.funf.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,15 +62,30 @@
             android:name=".Launcher"
             android:enabled="true"
             android:exported="true" >
-			<intent-filter>
-				<action android:name="android.intent.action.BATTERY_CHANGED" />
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
-				<action android:name="android.intent.action.DOCK_EVENT" />
-				<action android:name="android.intent.action.SCREEN_OFF" />
-				<action android:name="android.intent.action.ACTION_SCREEN_ON" />
-				<action android:name="android.intent.action.USER_PRESENT" />
-			</intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.DOCK_EVENT" />
+                <action android:name="android.intent.action.SCREEN_OFF" />
+                <action android:name="android.intent.action.ACTION_SCREEN_ON" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".SignInLifestreams"
+            android:label="@string/title_activity_sign_in_with_google"
+            android:theme="@style/Theme.AppCompat.Translucent" >
+        </activity>
+        <activity
+            android:name=".SignInDSU"
+            android:label="@string/title_activity_sign_in_lifestreams"
+            android:theme="@style/Theme.AppCompat.Translucent" >
+        </activity>
+        <activity
+            android:name=".MovesConnectorActivity"
+            android:label="@string/title_activity_moves_connector" >
+        </activity>
     </application>
 
 </manifest>
