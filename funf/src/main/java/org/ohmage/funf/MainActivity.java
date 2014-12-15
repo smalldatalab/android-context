@@ -1,14 +1,20 @@
 package org.ohmage.funf;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -55,13 +61,48 @@ public class MainActivity extends ActionBarActivity
                  return super.onOptionsItemSelected(item);
          }
      }
+     @TargetApi(Build.VERSION_CODES.L)
+     private boolean checkUsageStatsPermission(){
+         try {
+             UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.getSystemService("usagestats");
+             long time = System.currentTimeMillis();
+             // We get usage stats for the last 1 seconds
+             List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int) (time - 10000), time);
+             return !stats.isEmpty();
+         }catch(Exception e){
+             return false;
+         }
+     };
+
     @Override
     protected void onResume(){
         super.onResume();
-        if(!isPackageExisted(getString(R.string.moves_package_name))){
+        // start service (if it have not been started)
+        this.startService(new Intent(this, OhmageFunfManager.class));
+
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !checkUsageStatsPermission()){
+            new AlertDialog.Builder(this)
+                    .setTitle("Allow Access to App Usage Data")
+                    .setMessage(
+                            "Dear Participant: \nTo proceed, please approve Context app to access your app usage statistics. " +
+                            "This data is important in generating contextual recall cues.")
+                    .setCancelable(false)
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @TargetApi(Build.VERSION_CODES.L)
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                            startActivity(intent);
+                        }
+                    }).create().show();
+        }
+        else if(!isPackageExisted(getString(R.string.moves_package_name))){ // check if Moves app is installed
+
             new AlertDialog.Builder(this)
                     .setTitle("Install Moves App")
-                    .setMessage("Dear Participant: \nYou would need Moves app installed for the study. The installation will be started shortly.")
+                    .setMessage("Dear Participant: \nYou need to install Moves app for the study. The installation will be started shortly.")
                     .setCancelable(false)
                     .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                         @Override
@@ -77,6 +118,7 @@ public class MainActivity extends ActionBarActivity
             lifestreamsKey = sharedPreferences.getString(getString(R.string.lifestreams_key_field), null);
             lifestreamsUid = sharedPreferences.getString(getString(R.string.lifestreams_uid_field), null);
             isConnectedWithMoves = sharedPreferences.getBoolean(getString(R.string.if_connected_with_moves_field), false);
+            // check if we have all the credentials
             if (!inSignInProcess && (dsuAccessToken == null || dsuRefreshToken == null || lifestreamsKey == null || lifestreamsUid == null || !isConnectedWithMoves)) {
                 new AlertDialog.Builder(this)
                         .setTitle("Sign in the study")

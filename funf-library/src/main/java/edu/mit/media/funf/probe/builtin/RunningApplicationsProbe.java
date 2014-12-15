@@ -26,7 +26,10 @@ package edu.mit.media.funf.probe.builtin;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RecentTaskInfo;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 import com.google.gson.Gson;
@@ -43,6 +46,9 @@ import edu.mit.media.funf.util.LogUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 @DisplayName("Running Applications")
 @Description("Emits the applications the user is running using a polling method.")
@@ -55,26 +61,56 @@ public class RunningApplicationsProbe extends Base implements ContinuousProbe, P
 	
 	// Used as the flag for polling vs paused
 	private PowerManager pm;
-	
+
 	private class RunningAppsPoller implements Runnable {
 		
-		private RecentTaskInfo currentRunningTask = null;
+		private Object currentRunningTask = null;
 		private BigDecimal currentRunningTaskStartTime = null;
 		
 		@Override
 		public void run() {
-			if (am != null) {
-				List<RecentTaskInfo> currentTasks = am.getRecentTasks(1, ActivityManager.RECENT_WITH_EXCLUDED);
-				if (!currentTasks.isEmpty()) {
-					RecentTaskInfo updatedTask = currentTasks.get(0);
-					if (currentRunningTask == null || !currentRunningTask.baseIntent.filterEquals(updatedTask.baseIntent)) {
-						endCurrentTask();
-						currentRunningTask = updatedTask;
-						currentRunningTaskStartTime = TimeUtil.getTimestamp();
-					} 
-				}
-				getHandler().postDelayed(this, TimeUtil.secondsToMillis(pollInterval));
-			}
+            // use Usage Statistics API since Android 5.0
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+                UsageStatsManager mUsageStatsManager = (UsageStatsManager) RunningApplicationsProbe.this.getContext().getSystemService("usagestats");
+                long time = System.currentTimeMillis();
+                // We get usage stats for the last 1 seconds
+                List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int)(time - (1000*pollInterval)), time);
+                // Sort the stats by the last time used
+                if(stats != null) {
+                    long latestUsed = -1;
+                    UsageStats latestStats = null;
+                    for (UsageStats usageStats : stats) {
+                        if(usageStats.getLastTimeUsed() > latestUsed) {
+                            latestUsed = usageStats.getLastTimeUsed();
+                            latestStats = usageStats;
+                        }
+                    }
+                    if(latestStats != null) {
+                        if (currentRunningTask == null || !((UsageStats)currentRunningTask).getPackageName().equalsIgnoreCase(latestStats.getPackageName())) {
+                            endCurrentTask();
+                            currentRunningTask = latestStats;
+                            currentRunningTaskStartTime = TimeUtil.getTimestamp();
+                        }
+
+                    }
+                }
+            }else {
+                // use old RecentTasks api
+                if (am != null) {
+                    List<RecentTaskInfo> currentTasks = am.getRecentTasks(1, ActivityManager.RECENT_WITH_EXCLUDED);
+                    if (!currentTasks.isEmpty()) {
+                        RecentTaskInfo updatedTask = currentTasks.get(0);
+                        if (currentRunningTask == null || !((RecentTaskInfo)currentRunningTask).baseIntent.filterEquals(updatedTask.baseIntent)) {
+                            endCurrentTask();
+                            currentRunningTask = updatedTask;
+                            currentRunningTaskStartTime = TimeUtil.getTimestamp();
+                        }
+                    }
+
+                }
+            }
+            getHandler().postDelayed(this, TimeUtil.secondsToMillis(pollInterval));
 		}
 		
 		public void endCurrentTask() {
@@ -91,7 +127,7 @@ public class RunningApplicationsProbe extends Base implements ContinuousProbe, P
 		}
 	}
 	
-	private void sendData(RecentTaskInfo taskInfo, BigDecimal timestamp, BigDecimal duration) {
+	private void sendData(Object taskInfo, BigDecimal timestamp, BigDecimal duration) {
 		Gson gson = getGson();
 		JsonObject data = new JsonObject();
 		data.add(TIMESTAMP, gson.toJsonTree(timestamp));
