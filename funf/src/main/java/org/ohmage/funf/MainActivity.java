@@ -38,10 +38,38 @@ public class MainActivity extends ActionBarActivity
      private String dsuAccessToken, dsuRefreshToken, lifestreamsKey, lifestreamsUid;
      private Boolean isConnectedWithMoves;
      private ProgressDialog progress;
-    @Override
+
+     private AlertDialog allowUsageStatisticsDialog ;
+     private AlertDialog installMovesDialog;
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
+         installMovesDialog =  new AlertDialog.Builder(this)
+                 .setTitle("Install Moves App")
+                 .setMessage("Dear Participant: \nYou need to install Moves app for the study. The installation will be started shortly.")
+                 .setCancelable(false)
+                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialog, int which) {
+                         doShowMovesInPlayStore();
+                     }
+                 }).create();
+         allowUsageStatisticsDialog = new AlertDialog.Builder(this)
+                 .setTitle("Allow Access to App Usage Data")
+                 .setMessage(
+                         "Dear Participant: \nTo proceed, please approve Context app to access your app usage statistics. " +
+                                 "This data is important in generating contextual recall cues.")
+                 .setCancelable(false)
+                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                     @TargetApi(Build.VERSION_CODES.L)
+                     @Override
+                     public void onClick(DialogInterface dialog, int which) {
+
+                         Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                         startActivity(intent);
+                     }
+                 }).create();
         setContentView(R.layout.activity_main);
 
     }
@@ -82,34 +110,10 @@ public class MainActivity extends ActionBarActivity
 
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !checkUsageStatsPermission()){
-            new AlertDialog.Builder(this)
-                    .setTitle("Allow Access to App Usage Data")
-                    .setMessage(
-                            "Dear Participant: \nTo proceed, please approve Context app to access your app usage statistics. " +
-                            "This data is important in generating contextual recall cues.")
-                    .setCancelable(false)
-                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.L)
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-                            startActivity(intent);
-                        }
-                    }).create().show();
+            allowUsageStatisticsDialog.show();
         }
         else if(!isPackageExisted(getString(R.string.moves_package_name))){ // check if Moves app is installed
-
-            new AlertDialog.Builder(this)
-                    .setTitle("Install Moves App")
-                    .setMessage("Dear Participant: \nYou need to install Moves app for the study. The installation will be started shortly.")
-                    .setCancelable(false)
-                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            doShowMovesInPlayStore();
-                        }
-                    }).create().show();
+           installMovesDialog.show();
         }else{
             // get stored credentials
             sharedPreferences = getSharedPreferences(getString(R.string.credentials_pref_name), MODE_PRIVATE);
