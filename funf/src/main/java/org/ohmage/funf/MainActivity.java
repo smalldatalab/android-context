@@ -62,7 +62,7 @@ public class MainActivity extends ActionBarActivity
                                  "This data is important in generating contextual recall cues.")
                  .setCancelable(false)
                  .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                     @TargetApi(Build.VERSION_CODES.L)
+                     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                      @Override
                      public void onClick(DialogInterface dialog, int which) {
 
@@ -89,7 +89,7 @@ public class MainActivity extends ActionBarActivity
                  return super.onOptionsItemSelected(item);
          }
      }
-     @TargetApi(Build.VERSION_CODES.L)
+     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
      private boolean checkUsageStatsPermission(){
          try {
              UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.getSystemService("usagestats");
