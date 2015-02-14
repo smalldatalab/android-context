@@ -5,13 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import edu.mit.media.funf.json.IJsonObject;
-import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 
@@ -26,6 +27,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_MOBILE_SENSOR = "DSUData";
 
     // Contacts Table Columns names
+    private static final String KEY_ID = "id";
     private static final String KEY_CONFIG = "config";
     private static final String KEY_TIMESTAMP = "timestamp";
     private static final String KEY_DEVICE = "device_info";
@@ -40,8 +42,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         //create mobile sensor table
         String CREATE_MOBILE_SENSOR_TABLE ="CREATE TABLE " + TABLE_MOBILE_SENSOR + " ("
-                + KEY_CONFIG + " TEXT," + KEY_TIMESTAMP + " TEXT,"
-                + KEY_DEVICE + " TEXT," + KEY_DATA + " TEXT," + ")";
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_DATA + " TEXT,"
+                + KEY_CONFIG + " TEXT," + KEY_TIMESTAMP + " TEXT," + KEY_DEVICE + " TEXT," + ")";
 
         db.execSQL(CREATE_MOBILE_SENSOR_TABLE);
     }
@@ -61,47 +63,56 @@ public class DatabaseHandler extends SQLiteOpenHelper {
      */
 
     // Adding new Entry
-    long addContact(JsonObject data, JsonObject config, DateTime timestamp, String device) {
+    public void add(ProbeObject obj) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
-        values.put(KEY_CONFIG, config.toString());
-        values.put(KEY_TIMESTAMP, timestamp.toString());
-        values.put(KEY_DEVICE, device);
-        values.put(KEY_DATA, data.toString());
+        values.put(KEY_DATA, obj.getData());
+        values.put(KEY_CONFIG, obj.getConfig());
+        values.put(KEY_TIMESTAMP, obj.getTimestamp());
+        values.put(KEY_DEVICE, obj.getBuild());
 
         // Inserting Row
-        long newRowId = db.insert(TABLE_MOBILE_SENSOR, null, values);
+        db.insert(TABLE_MOBILE_SENSOR, null, values);
         db.close(); // Closing database connection
-        return newRowId;
     }
 
-    // Getting single Entry
-    JsonObject getContact(long id) {
-        SQLiteDatabase db = this.getReadableDatabase();
+    // Retrieves all of the Entries
+    public List<ProbeObject> getAll() {
+        List<ProbeObject> probeList = new ArrayList<ProbeObject>();
 
-        Cursor cursor = db.query(TABLE_MOBILE_SENSOR, new String[]{KEY_CONFIG,
-                        KEY_TIMESTAMP, KEY_DEVICE, KEY_DATA}, KEY_CONFIG + "=?",
-                new String[]{String.valueOf(id)}, null, null, null, null);
-        if (cursor != null) {
-            cursor.moveToFirst();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_MOBILE_SENSOR;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                JsonParser parser = new JsonParser();
+
+                ProbeObject obj = new ProbeObject(
+                    Integer.parseInt(cursor.getString(0)),
+                    (JsonObject) (parser.parse(cursor.getString(1))),
+                    (JsonObject) (parser.parse(cursor.getString(2))),
+                    cursor.getString(3),
+                    cursor.getString(4)
+                );
+                // Adding contact to list
+                probeList.add(obj);
+            } while (cursor.moveToNext());
         }
 
-        JsonParser parser = new JsonParser();
-
-        JsonObject data = (JsonObject) (parser.parse(cursor.getString(3)));
-        JsonObject config = (JsonObject) (parser.parse(cursor.getString(0)));
-        data.add("probeConfig", config);
-        data.addProperty("timestamp", cursor.getString(1));
-        data.addProperty("device_info", cursor.getString(2));
-        // return json data
-        return data;
+        // return contact list
+        return probeList;
     }
 
-    // Deleting single contact
-    public void deleteContact(JsonObject config) {
+    // Deleting single probe
+    public void delete(ProbeObject obj) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_MOBILE_SENSOR, KEY_CONFIG + " = ?",
-                new String[] { String.valueOf(config.toString()) });
+        db.delete(TABLE_MOBILE_SENSOR, KEY_ID + " = ?",
+                new String[] { String.valueOf(obj.getID()) });
         db.close();
     }
 }

@@ -6,11 +6,10 @@ import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.SyncResult;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,12 +18,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import edu.mit.media.funf.json.IJsonObject;
 import edu.mit.media.funf.probe.Probe;
+
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.joda.time.DateTime;
 import org.ohmage.streams.StreamContract;
-import org.ohmage.streams.StreamPointBuilder;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Ohmage Data Upload implements the Data Listener and submit the
@@ -41,58 +47,49 @@ public class DSUDataUploader implements Probe.DataListener {
         final Handler handler;
         private final DSUSyncer syncer;
         private final DatabaseHandler db;
+        private final String DSU_URL = "https://lifestreams.smalldata.io/dsu/dataPoints";
 
         @Override
         public void onDataReceived(final IJsonObject probeConfig, final IJsonObject probeData) {
             handler.post(new Runnable() {
+
                 @Override
                 public void run() {
                     if (StreamContract.checkContentProviderExists(manager.getContentResolver())) {
-                        try {
-                            // send with probe config data
-                            JsonObject data = probeData.getAsJsonObject();
-                            data.add("probeConfig", probeConfig);
 
-                            // create timestamp
-                            DateTime timestamp;
-                            if(data.has("timestamp")){ // for timestamped probe data
-                                // convert epoch second to epoch millis
-                                long timestampLong = data.get("timestamp")
-                                        .getAsBigDecimal()
-                                        .multiply(new BigDecimal(1000)).longValue();
-                                if(timestampLong <= prevCheckpoint){
-                                    //do not submit the data point whose time is before the prevCheckpoint
-                                    //Log.i("OhmageUpload", "Skip data point before prevCheckpoint " + probeConfig);
-                                    return;
-                                }
-                                timestamp = new DateTime(timestampLong);
+                        // send with probe config data
+                        JsonObject data = probeData.getAsJsonObject();
+                        JsonObject config = probeConfig.getAsJsonObject();
 
-                            }else {
-                                // or use the current time
-                                timestamp = new DateTime();
+                        // create timestamp
+                        DateTime timestamp;
+                        if(data.has("timestamp")){ // for timestamped probe data
+
+                            // convert epoch second to epoch millis
+                            long timestampLong = data.get("timestamp")
+                                .getAsBigDecimal()
+                                .multiply(new BigDecimal(1000)).longValue();
+                            if(timestampLong <= prevCheckpoint){
+                                //do not submit the data point whose time is before the prevCheckpoint
+                                //Log.i("OhmageUpload", "Skip data point before prevCheckpoint " + probeConfig);
+                                return;
                             }
-                            // add device information
-                            data.addProperty("device_info", Build.MODEL + ":" +
-                                    Build.PRODUCT + "-" + Build.TYPE
-                                            + " " + Build.VERSION.RELEASE
-                                            + " " + Build.ID
-                                            + " " + Build.VERSION.INCREMENTAL
-                                            + " " + Build.TAGS);
-                            // submit data point to ohmage
-//                            new StreamPointBuilder(stream.id, stream.version)
-//                                    .withId()
-//                                    .withTime(timestamp)
-//                                    .setData(data.toString())
-//                                    .write(manager.getContentResolver());
-                            
-                            // create and store the data in the ContentProvider
-                            
-                            // notify manager that we just upload one datapoint
-                            manager.updateLastUploadTime(new Date().getTime());
-                        } catch (Exception e) {
-                            Log.e("OhmageUpload", e.toString());
+                            timestamp = new DateTime(timestampLong);
+                        } else {
+                            // or use the current time
+                            timestamp = new DateTime();
                         }
 
+                        // add device information
+                        String info =  Build.MODEL + ":" +
+                            Build.PRODUCT + "-" + Build.TYPE
+                            + " " + Build.VERSION.RELEASE
+                            + " " + Build.ID
+                            + " " + Build.VERSION.INCREMENTAL
+                            + " " + Build.TAGS;
+                            
+                        // create and store the data in the database
+                        db.add(new ProbeObject(data, config, timestamp.toString(), info));
                     }
                 }
             });
@@ -109,7 +106,6 @@ public class DSUDataUploader implements Probe.DataListener {
                 // will occur before/or after the onDataReceived().
                 Log.i("Checkpoint", "Committed checkpoint for " + probeConfig);
             }
-
         }
 
     /**
@@ -148,7 +144,7 @@ public class DSUDataUploader implements Probe.DataListener {
         }
 
     /** SyncAdapter class for sending data to the DSU */
-    private class DSUSyncer extends AbstractThreadedSyncAdapter {
+    public class DSUSyncer extends AbstractThreadedSyncAdapter {
         public DSUSyncer(Context context, boolean autoInitialize) {
             super(context, autoInitialize);
         }
@@ -158,6 +154,30 @@ public class DSUDataUploader implements Probe.DataListener {
             Bundle extras, String authority, ContentProviderClient provider,
             SyncResult syncResult) {
 
+            List<ProbeObject> probes = db.getAll();
+            for (ProbeObject probe : probes) {
+                JsonObject json = probe.getJson();
+                // Post the contents of the probe to the DSU
+                try {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpPost post = new HttpPost(DSU_URL);
+                    post.setHeader(new BasicHeader("Authorization", "Bearer " + R.string.dsu_client_auth));
+                    post.setHeader(new BasicHeader("Content-type", "application/json"));
+                    post.setEntity(new StringEntity(json.toString()));
+                    HttpResponse res = httpclient.execute(post);
+
+                    // Check if sign-in succeeded
+                    if (res.getStatusLine().getStatusCode() != 201) {
+                        throw new Exception("Fail to write to DSU");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // Remove the probe from the database
+                db.delete(probe);
+            }
+            manager.updateLastUploadTime(new Date().getTime());
         }
     }
 }
