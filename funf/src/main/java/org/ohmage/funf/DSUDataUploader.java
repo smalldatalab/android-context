@@ -109,6 +109,37 @@ public class DSUDataUploader implements Probe.DataListener {
         }
 
     /**
+     * Function for uploading the data to the DSU Server
+     * Called by the SyncAdapter in manager
+     */
+        public void uploadData() {
+            List<ProbeObject> probes = db.getAll();
+            for (ProbeObject probe : probes) {
+                JsonObject json = probe.getJson();
+                // Post the contents of the probe to the DSU
+                try {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpPost post = new HttpPost(DSU_URL);
+                    post.setHeader(new BasicHeader("Authorization", "Bearer " + R.string.dsu_client_auth));
+                    post.setHeader(new BasicHeader("Content-type", "application/json"));
+                    post.setEntity(new StringEntity(json.toString()));
+                    HttpResponse res = httpclient.execute(post);
+
+                    // Check if sign-in succeeded
+                    if (res.getStatusLine().getStatusCode() != 201) {
+                        throw new Exception("Fail to write to DSU");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                // Remove the probe from the database
+                db.delete(probe);
+            }
+            manager.updateLastUploadTime(new Date().getTime());
+        }
+
+    /**
      *
      * @param manager the funf manager object, which should also contains the Context.
      * @param stream the ohmage stream object. It contains the probe configuration and corresponding ohmage stream
@@ -151,33 +182,9 @@ public class DSUDataUploader implements Probe.DataListener {
 
         @Override
         public void onPerformSync(Account account,
-            Bundle extras, String authority, ContentProviderClient provider,
-            SyncResult syncResult) {
-
-            List<ProbeObject> probes = db.getAll();
-            for (ProbeObject probe : probes) {
-                JsonObject json = probe.getJson();
-                // Post the contents of the probe to the DSU
-                try {
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpPost post = new HttpPost(DSU_URL);
-                    post.setHeader(new BasicHeader("Authorization", "Bearer " + R.string.dsu_client_auth));
-                    post.setHeader(new BasicHeader("Content-type", "application/json"));
-                    post.setEntity(new StringEntity(json.toString()));
-                    HttpResponse res = httpclient.execute(post);
-
-                    // Check if sign-in succeeded
-                    if (res.getStatusLine().getStatusCode() != 201) {
-                        throw new Exception("Fail to write to DSU");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                // Remove the probe from the database
-                db.delete(probe);
-            }
-            manager.updateLastUploadTime(new Date().getTime());
+                                  Bundle extras, String authority, ContentProviderClient provider,
+                                  SyncResult syncResult) {
+            uploadData();
         }
     }
 }
