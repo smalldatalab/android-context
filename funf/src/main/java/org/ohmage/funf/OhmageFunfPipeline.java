@@ -60,7 +60,7 @@ public class OhmageFunfPipeline implements Pipeline{
                          continue;
                      }
                     // set up data uploader as the data listener
-                    OhmageDataUploader uploader = new OhmageDataUploader((OhmageFunfManager)manager, stream, handler);
+                    DSUDataUploader uploader = new DSUDataUploader((OhmageFunfManager)manager, stream, handler);
                     stream.source.setListener(uploader);
                     stream.source.start();
 
