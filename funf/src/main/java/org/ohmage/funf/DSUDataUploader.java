@@ -45,9 +45,6 @@ public class DSUDataUploader implements Probe.DataListener {
         final Long prevCheckpoint;
         final String key;
         final Handler handler;
-        private final DSUSyncer syncer;
-        private final DatabaseHandler db;
-        private final String DSU_URL = "https://lifestreams.smalldata.io/dsu/dataPoints";
 
         @Override
         public void onDataReceived(final IJsonObject probeConfig, final IJsonObject probeData) {
@@ -89,7 +86,7 @@ public class DSUDataUploader implements Probe.DataListener {
                             + " " + Build.TAGS;
                             
                         // create and store the data in the database
-                        db.add(new ProbeObject(data, config, timestamp.toString(), info));
+                        manager.getDatabase().add(new ProbeObject(data, config, timestamp.toString(), info));
                     }
                 }
             });
@@ -109,37 +106,6 @@ public class DSUDataUploader implements Probe.DataListener {
         }
 
     /**
-     * Function for uploading the data to the DSU Server
-     * Called by the SyncAdapter in manager
-     */
-        public void uploadData() {
-            List<ProbeObject> probes = db.getAll();
-            for (ProbeObject probe : probes) {
-                JsonObject json = probe.getJson();
-                // Post the contents of the probe to the DSU
-                try {
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpPost post = new HttpPost(DSU_URL);
-                    post.setHeader(new BasicHeader("Authorization", "Bearer " + R.string.dsu_client_auth));
-                    post.setHeader(new BasicHeader("Content-type", "application/json"));
-                    post.setEntity(new StringEntity(json.toString()));
-                    HttpResponse res = httpclient.execute(post);
-
-                    // Check if sign-in succeeded
-                    if (res.getStatusLine().getStatusCode() != 201) {
-                        throw new Exception("Fail to write to DSU");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                // Remove the probe from the database
-                db.delete(probe);
-            }
-            manager.updateLastUploadTime(new Date().getTime());
-        }
-
-    /**
      *
      * @param manager the funf manager object, which should also contains the Context.
      * @param stream the ohmage stream object. It contains the probe configuration and corresponding ohmage stream
@@ -147,7 +113,7 @@ public class DSUDataUploader implements Probe.DataListener {
      * @param handler handler for upload task.
      */
         @TargetApi(Build.VERSION_CODES.GINGERBREAD)
-        public DSUDataUploader(OhmageFunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler)      {
+        public DSUDataUploader(OhmageFunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler) {
             this.manager = manager;
             this.stream = stream;
             this.handler = handler;
@@ -166,25 +132,8 @@ public class DSUDataUploader implements Probe.DataListener {
             } catch (Exception e) {
                 Log.e("Checkpoint", "Cannot get package install date");
             }
-            
+
             // get previous checkpoint or set it to be the app installed time
             this.prevCheckpoint = checkpointStore.getLong(key, appInstalledDate);
-
-            this.db = new DatabaseHandler(manager.getApplicationContext());
-            this.syncer = new DSUSyncer(manager.getApplicationContext(),true);
         }
-
-    /** SyncAdapter class for sending data to the DSU */
-    public class DSUSyncer extends AbstractThreadedSyncAdapter {
-        public DSUSyncer(Context context, boolean autoInitialize) {
-            super(context, autoInitialize);
-        }
-
-        @Override
-        public void onPerformSync(Account account,
-                                  Bundle extras, String authority, ContentProviderClient provider,
-                                  SyncResult syncResult) {
-            uploadData();
-        }
-    }
 }

@@ -1,13 +1,29 @@
 package org.ohmage.funf;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.*;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.text.format.DateUtils;
+
+import com.google.gson.JsonObject;
+
 import edu.mit.media.funf.FunfManager;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.ohmage.streams.StreamContract;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -112,5 +128,93 @@ public class OhmageFunfManager extends FunfManager {
             }, intentFilter);
         }
 
+        // Initialize DSU-related structures
+        this.db = new DatabaseHandler(this);
+        this.syncer = new DSUSyncer(this,true);
+        this.mAccount = createSyncAccount(this);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent){
+        super.onBind(intent);
+        return syncer.getSyncAdapterBinder();
+    }
+
+    /** DSU Database access */
+    private DatabaseHandler db;
+
+    public DatabaseHandler getDatabase() {
+        return db;
+    }
+
+    /** DSU Syncing */
+    public static final String ACCOUNT_AUTH = "org.ohmage.funf.syncer";
+    public static final String ACCOUNT_TYPE = "dummy.com";
+    public static final String ACCOUNT_NAME = "dummy";
+    private final String DSU_URL = "https://lifestreams.smalldata.io/dsu/dataPoints";
+
+    private Account mAccount;
+    private DSUSyncer syncer;
+
+    /** Function for creating a dummy Account */
+    public static Account createSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(ACCOUNT_NAME, ACCOUNT_TYPE);
+        // Get an instance of the Android account manager
+        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+            // Does this work w/o a content provider?
+            context.getContentResolver().setIsSyncable(newAccount, ACCOUNT_AUTH, 1);
+            return newAccount;
+        } else {
+            /* The account exists or some other error occurred. */
+            return null;
+        }
+    }
+
+    /** Function for uploading the data to the DSU Server */
+    public void uploadData() {
+        List<ProbeObject> probes = db.getAll();
+        for (ProbeObject probe : probes) {
+            JsonObject json = probe.getJson();
+            // Post the contents of the probe to the DSU
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost post = new HttpPost(DSU_URL);
+                post.setHeader(new BasicHeader("Authorization", "Bearer " + R.string.dsu_client_auth));
+                post.setHeader(new BasicHeader("Content-type", "application/json"));
+                post.setEntity(new StringEntity(json.toString()));
+                HttpResponse res = httpclient.execute(post);
+
+                // Check if sign-in succeeded
+                if (res.getStatusLine().getStatusCode() != 201) {
+                    throw new Exception("Fail to write to DSU");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // Remove the probe from the database
+            db.delete(probe);
+        }
+        updateLastUploadTime(new Date().getTime());
+    }
+
+    /** SyncAdapter class for sending data to the DSU */
+    public class DSUSyncer extends AbstractThreadedSyncAdapter {
+        public DSUSyncer(Context context, boolean autoInitialize) {
+            super(context, autoInitialize);
+        }
+
+        @Override
+        public void onPerformSync(Account account,
+                                  Bundle extras, String authority, ContentProviderClient provider,
+                                  SyncResult syncResult) {
+            uploadData();
+        }
     }
 }
