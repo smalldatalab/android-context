@@ -166,14 +166,16 @@ public class OhmageFunfManager extends FunfManager {
          * Add the account and account type, no password or user data
          * If successful, return the Account object, otherwise report an error.
          */
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-            // Does this work w/o a content provider?
-            context.getContentResolver().setIsSyncable(newAccount, ACCOUNT_AUTH, 1);
-            return newAccount;
-        } else {
-            /* The account exists or some other error occurred. */
-            return null;
-        }
+//        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+//            // Does this work w/o a content provider?
+//            context.getContentResolver().setIsSyncable(newAccount, ACCOUNT_AUTH, 1);
+//            return newAccount;
+//        } else {
+//            /* The account exists or some other error occurred. */
+//            return null;
+//        }
+
+        return newAccount;
     }
 
     /** Function for uploading the data to the DSU Server */
