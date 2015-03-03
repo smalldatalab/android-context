@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.format.DateUtils;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
 
@@ -31,6 +32,7 @@ import java.util.TimerTask;
  * Created by changun on 7/18/14.
  */
 public class OhmageFunfManager extends FunfManager {
+    private static final String TAG = "OhmageFunfManager";
     private long lastUploadTime  = -1;
     public void updateLastUploadTime(long time){
         this.lastUploadTime = time;
@@ -129,9 +131,10 @@ public class OhmageFunfManager extends FunfManager {
         }
 
         // Initialize DSU-related structures
+        Log.i(TAG, "Initializing database and syncer");
         this.db = new DatabaseHandler(this);
-        this.syncer = new DSUSyncer(this,true);
         this.mAccount = createSyncAccount(this);
+        this.syncer = new DSUSyncer(this,true);
     }
 
     @Override
@@ -216,6 +219,7 @@ public class OhmageFunfManager extends FunfManager {
         public void onPerformSync(Account account,
                                   Bundle extras, String authority, ContentProviderClient provider,
                                   SyncResult syncResult) {
+            Log.i(TAG, "Syncing");
             uploadData();
         }
     }

@@ -38,7 +38,8 @@ import java.util.List;
  * Created by changun on 7/18/14.
  */
 public class DSUDataUploader implements Probe.DataListener {
-	
+
+        private static final String TAG = "DSUDataUploader";
         final private OhmageFunfManager manager;
         final SharedPreferences checkpointStore;
         final OhmageFunfPipeline.OhmageStream stream;
@@ -48,6 +49,7 @@ public class DSUDataUploader implements Probe.DataListener {
 
         @Override
         public void onDataReceived(final IJsonObject probeConfig, final IJsonObject probeData) {
+            Log.i(TAG, "Recording proble");
             handler.post(new Runnable() {
 
                 @Override
@@ -114,6 +116,7 @@ public class DSUDataUploader implements Probe.DataListener {
      */
         @TargetApi(Build.VERSION_CODES.GINGERBREAD)
         public DSUDataUploader(OhmageFunfManager manager, OhmageFunfPipeline.OhmageStream stream, Handler handler) {
+            Log.i(TAG, "Initializing");
             this.manager = manager;
             this.stream = stream;
             this.handler = handler;
