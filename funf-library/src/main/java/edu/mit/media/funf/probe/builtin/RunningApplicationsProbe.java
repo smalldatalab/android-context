@@ -70,32 +70,32 @@ public class RunningApplicationsProbe extends Base implements ContinuousProbe, P
 		@Override
 		public void run() {
             // use Usage Statistics API since Android 5.0
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-                UsageStatsManager mUsageStatsManager = (UsageStatsManager) RunningApplicationsProbe.this.getContext().getSystemService("usagestats");
-                long time = System.currentTimeMillis();
-                // We get usage stats for the last 1 seconds
-                List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int)(time - (1000*pollInterval)), time);
-                // Sort the stats by the last time used
-                if(stats != null) {
-                    long latestUsed = -1;
-                    UsageStats latestStats = null;
-                    for (UsageStats usageStats : stats) {
-                        if(usageStats.getLastTimeUsed() > latestUsed) {
-                            latestUsed = usageStats.getLastTimeUsed();
-                            latestStats = usageStats;
-                        }
-                    }
-                    if(latestStats != null) {
-                        if (currentRunningTask == null || !((UsageStats)currentRunningTask).getPackageName().equalsIgnoreCase(latestStats.getPackageName())) {
-                            endCurrentTask();
-                            currentRunningTask = latestStats;
-                            currentRunningTaskStartTime = TimeUtil.getTimestamp();
-                        }
-
-                    }
-                }
-            }else {
+//            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//
+//                UsageStatsManager mUsageStatsManager = (UsageStatsManager) RunningApplicationsProbe.this.getContext().getSystemService("usagestats");
+//                long time = System.currentTimeMillis();
+//                // We get usage stats for the last 1 seconds
+//                List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int)(time - (1000*pollInterval)), time);
+//                // Sort the stats by the last time used
+//                if(stats != null) {
+//                    long latestUsed = -1;
+//                    UsageStats latestStats = null;
+//                    for (UsageStats usageStats : stats) {
+//                        if(usageStats.getLastTimeUsed() > latestUsed) {
+//                            latestUsed = usageStats.getLastTimeUsed();
+//                            latestStats = usageStats;
+//                        }
+//                    }
+//                    if(latestStats != null) {
+//                        if (currentRunningTask == null || !((UsageStats)currentRunningTask).getPackageName().equalsIgnoreCase(latestStats.getPackageName())) {
+//                            endCurrentTask();
+//                            currentRunningTask = latestStats;
+//                            currentRunningTaskStartTime = TimeUtil.getTimestamp();
+//                        }
+//
+//                    }
+//                }
+//            }else {
                 // use old RecentTasks api
                 if (am != null) {
                     List<RecentTaskInfo> currentTasks = am.getRecentTasks(1, ActivityManager.RECENT_WITH_EXCLUDED);
@@ -109,7 +109,7 @@ public class RunningApplicationsProbe extends Base implements ContinuousProbe, P
                     }
 
                 }
-            }
+//            }
             getHandler().postDelayed(this, TimeUtil.secondsToMillis(pollInterval));
 		}
 		

@@ -54,7 +54,7 @@ public class DSUDataUploader implements Probe.DataListener {
 
                 @Override
                 public void run() {
-                    if (StreamContract.checkContentProviderExists(manager.getContentResolver())) {
+//                    if (StreamContract.checkContentProviderExists(manager.getContentResolver())) {
 
                         // send with probe config data
                         JsonObject data = probeData.getAsJsonObject();
@@ -90,7 +90,7 @@ public class DSUDataUploader implements Probe.DataListener {
                         // create and store the data in the database
                         manager.getDatabase().add(new ProbeObject(data, config, timestamp.toString(), info));
                     }
-                }
+//                }
             });
         }
 
