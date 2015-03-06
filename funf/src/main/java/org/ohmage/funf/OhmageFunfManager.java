@@ -133,8 +133,8 @@ public class OhmageFunfManager extends FunfManager {
         // Initialize DSU-related structures
         Log.i(TAG, "Initializing database and syncer");
         this.db = new DatabaseHandler(this);
-        this.mAccount = createSyncAccount(this);
-        this.syncer = new DSUSyncer(this,true);
+//        this.mAccount = createSyncAccount(this);
+//        this.syncer = new DSUSyncer(this,true);
     }
 
     @Override

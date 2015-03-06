@@ -49,7 +49,7 @@ public class DSUDataUploader implements Probe.DataListener {
 
         @Override
         public void onDataReceived(final IJsonObject probeConfig, final IJsonObject probeData) {
-            Log.i(TAG, "Recording proble");
+            Log.i(TAG, "Recording probe");
             handler.post(new Runnable() {
 
                 @Override

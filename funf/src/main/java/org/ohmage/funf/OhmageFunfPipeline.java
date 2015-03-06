@@ -26,6 +26,7 @@ import java.util.List;
  */
 public class OhmageFunfPipeline implements Pipeline{
 
+    private static final String TAG = "OhmageFunfPipeline";
     private boolean enabled = false;
     private Looper looper;
     private Handler handler;
@@ -41,21 +42,33 @@ public class OhmageFunfPipeline implements Pipeline{
 
         @Override
         public void onCreate(final FunfManager manager) {
+
+            Log.i(TAG, "Beginning pipeline");
+
             if(!(manager instanceof OhmageFunfManager)){
                 throw new RuntimeException("ohmage funf pipeline only support ohmage funf manager");
             }
+
+            Log.i(TAG, "Checked manager instance");
+
             // we need ohmage installed to proceed
             if(!StreamContract.checkContentProviderExists(manager.getContentResolver())){
                 return;
             }
+
+            Log.i(TAG, "Ohmage installed");
+
             HandlerThread thread = new HandlerThread(getClass().getName());
             thread.start();
             this.looper = thread.getLooper();
             this.handler = new Handler(looper);
 
-            if (enabled == false) {
-                for (final OhmageStream stream : streams) {
+            Log.i(TAG, "Finished initial setup");
 
+            if (enabled == false) {
+                Log.i(TAG, "Checking streams");
+                for (final OhmageStream stream : streams) {
+                    Log.i(TAG, "Creating uploader for stream");
                      if(stream == null || stream.source == null){
                          continue;
                      }

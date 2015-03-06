@@ -89,18 +89,18 @@ public class MainActivity extends ActionBarActivity
                  return super.onOptionsItemSelected(item);
          }
      }
-     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-     private boolean checkUsageStatsPermission(){
-         try {
-             UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.getSystemService("usagestats");
-             long time = System.currentTimeMillis();
-             // We get usage stats for the last 1 seconds
-             List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int) (time - 10000), time);
-             return !stats.isEmpty();
-         }catch(Exception e){
-             return false;
-         }
-     };
+//     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+//     private boolean checkUsageStatsPermission(){
+//         try {
+//             UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.getSystemService("usagestats");
+//             long time = System.currentTimeMillis();
+//             // We get usage stats for the last 1 seconds
+//             List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, (int) (time - 10000), time);
+//             return !stats.isEmpty();
+//         }catch(Exception e){
+//             return false;
+//         }
+//     };
 
     @Override
     protected void onResume(){
@@ -109,10 +109,11 @@ public class MainActivity extends ActionBarActivity
         this.startService(new Intent(this, OhmageFunfManager.class));
 
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !checkUsageStatsPermission()){
-            allowUsageStatisticsDialog.show();
-        }
-        else if(!isPackageExisted(getString(R.string.moves_package_name))){ // check if Moves app is installed
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !checkUsageStatsPermission()){
+//            allowUsageStatisticsDialog.show();
+//        }
+//        else if(!isPackageExisted(getString(R.string.moves_package_name))){ // check if Moves app is installed
+        if(!isPackageExisted(getString(R.string.moves_package_name))){ // check if Moves app is installed
            installMovesDialog.show();
         }else{
             // get stored credentials
