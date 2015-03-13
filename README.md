@@ -1,4 +1,3 @@
-ohmage-funf
+android-context
 ===========
-
-This is an attempt to integrate funf library with ohmage 3.0. The code under "funf-library" is directly cloned from funf.org for ease of compilation. The code under "funf-library" is directly cloned from funf.org for ease of compilation.
+Context, based on funf, collected the user's phone usage data and upload to omh-dsu.
