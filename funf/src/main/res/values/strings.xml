@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Contextual Data Collector</string>
+    <string name="app_name">Context</string>
     <string name="greeting">Hi there!</string>
     <string name="description">Thank you again for participating in our study. This app collects the phone usage data and transforms them into cues for contextual recall.</string>
     <string name="status_bar">Contextual data collector is running</string>
     <string name="status_title">Contextual data collector</string>
     <string name="action_settings">Settings</string>
-    <string name="dsu">https://lifestreams.smalldata.io/dsu/</string>
-    <string name="dsu_code">https://lifestreams.smalldata.io/dsu/google-signin</string>
-    <string name="dsu_token">https://lifestreams.smalldata.io/dsu/oauth/token</string>
-    <string name="dsu_google_client_id">48636836762-mulldgpmet2r4s3f16s931ea9crcc64m.apps.googleusercontent.com</string>
-    <string name="dsu_google_scope">email https://www.googleapis.com/auth/userinfo.profile</string>
-    <string name="dsu_client_auth">aW8uc21hbGxkYXRhLmxpZmVzdHJlYW1zOjFxYXpAV1NY</string>
     <!--
          Some rule for data source definition
 		1. Do not ever specify "opportunistic" field. It dos not work.
@@ -107,25 +101,27 @@
 
 		}</string>
     <string name="title_activity_sign_in_with_google">SignInWithGoogle</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_sign_in_lifestreams">SignInLifestreams</string>
+    <string name="title_activity_moves_connector">MovesConnectorActivity</string>
+
     <string name="sign_in_succeeded_toast">You have successfully signed in!</string>
     <string name="sing_in_failed_toast">Sign in failed. Please try again or consult study coordinator.</string>
-    <string name="title_activity_sign_in_lifestreams">SignInLifestreams</string>
+    <string name="moves_connection_failed_toast">Failed to connect to Moves. Please try again.</string>
+
     <string name="lifestreams.signin.url"><![CDATA[https://lifestreams.smalldata.io/login?redirect=http%3A%2F%2Foauth&access_token=]]></string>
     <string name="lifestreams.google.scope">oauth2:profile email</string>
-    <string name="dsu.client_id">io.smalldata.lifestreams</string>
-    <string name="title_activity_moves_connector">MovesConnectorActivity</string>
+    <string name="lifestreams.oauth.code.endpoint" formatted="false"><![CDATA[https://lifestreams.smalldata.io/oauth/code?provider=%s&code=%s&key=%s]]></string>
+
+
+    <string name="moves.package.name">com.protogeo.moves</string>
     <string name="moves.scope">location activity</string>
     <string name="moves.client_id">0N2iXQ5Mu5a7js6tB66390ywpEC6P9A9</string>
     <string name="moves.redirect_uri">http://lifestreams.smalldata.io/oauth/callback</string>
-    <string name="lifestreams.oauth.code.endpoint" formatted="false"><![CDATA[https://lifestreams.smalldata.io/oauth/code?provider=%s&code=%s&key=%s]]></string>
+
+
     <string name="credentials.pref.name">Credentials</string>
-    <string name="dsu.token.field">dsuAccessToken</string>
-    <string name="dsu.refresh.token.field">dsuRefreshToken</string>
     <string name="lifestreams.key.field">lifestreamsKey</string>
     <string name="lifestreams.uid.field">lifestreamsUid</string>
-    <string name="if.connected.with.moves.field">isConnectedWithMoves</string>
-    <string name="moves_connection_failed_toast">Failed to connect to Moves. Please try again.</string>
-    <string name="moves.package.name">com.protogeo.moves</string>
+    <string name="is.connected.with.moves.field">isConnectedWithMoves</string>
 
 </resources>

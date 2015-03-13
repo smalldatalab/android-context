@@ -15,17 +15,20 @@
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
     <!-- For SyncAdapter Usage -->
     <uses-permission android:name="android.permission.READ_SYNC_STATS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <!-- For running on boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- For running on boot -->
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_statistics"
@@ -52,10 +55,6 @@
             <meta-data
                 android:name="default"
                 android:value="@string/ohmage_pipeline" />
-            <!--
-            <meta-data
-                android:name="org.ohmage.funf.DSUDataUploader.DSUSyncer"
-                android:resource="@xml/dsusyncer" /> -->
         </service>
 
         <activity
@@ -91,12 +90,35 @@
         <activity
             android:name=".SignInDSU"
             android:label="@string/title_activity_sign_in_lifestreams"
+            android:exported="true"
             android:theme="@style/Theme.AppCompat.Translucent" >
         </activity>
         <activity
             android:name=".MovesConnectorActivity"
             android:label="@string/title_activity_moves_connector" >
         </activity>
+
+        <provider
+            android:name=".ContextContentProvider"
+            android:authorities="io.smalldata.android.context.provider"
+            android:syncable="true"
+            android:enabled="true">
+        </provider>
+        <service
+            android:name=".DSUService"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/dsusyncer" />
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
     </application>
 
 </manifest>

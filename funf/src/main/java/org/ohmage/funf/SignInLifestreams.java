@@ -1,11 +1,10 @@
 package org.ohmage.funf;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,7 +34,6 @@ public class SignInLifestreams extends ActionBarActivity implements
     private static final int REQUEST_RESOLVE_ERROR = 2;
 
     /* Response code used to communicate the sign in result */
-    public static final int SIGN_IN_SUCCEEDED = 1;
     public static final int FAILED_TO_GET_AUTH_CODE = 2;
     public static final int FAILED_TO_SIGN_IN = 3;
 
@@ -196,12 +194,14 @@ public class SignInLifestreams extends ActionBarActivity implements
                                     Intent i = new Intent();
                                     i.putExtra("key", finalKey);
                                     i.putExtra("uid", finalUid);
-                                    SignInLifestreams.this.setResult(SIGN_IN_SUCCEEDED, i);
+                                    SignInLifestreams.this.setResult(RESULT_OK, i);
                                     SignInLifestreams.this.finish();
                                 }
                             });
+                            return null;
                         }
                     }
+
                 fail(FAILED_TO_SIGN_IN);
                 }catch (UserRecoverableAuthException e) {
                 // Requesting an authorization code will always throw

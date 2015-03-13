@@ -1,11 +1,13 @@
 package org.ohmage.funf;
 
-import android.app.ProgressDialog;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,24 +16,18 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import com.squareup.okhttp.Response;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SignInDSU extends ActionBarActivity implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class SignInDSU extends  AccountAuthenticatorActivity  implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     /* Request code used to invoke sign in user interactions. */
     private static final int AUTH_CODE_REQUEST_CODE = 1;
     private static final int REQUEST_RESOLVE_ERROR = 2;
 
     /* Response code used to communicate the sign in result */
-    public static final int SIGN_IN_SUCCEEDED = 1;
     public static final int FAILED_TO_GET_AUTH_CODE = 2;
     public static final int FAILED_TO_SIGN_IN = 3;
     public static final int INVALID_ACCESS_TOKEN = 4;
@@ -39,6 +35,9 @@ public class SignInDSU extends ActionBarActivity implements
     /* Client used to interact with Google APIs. */
     private GoogleApiClient mGoogleApiClient;
     private boolean afterConsent = false;
+
+    final static String TAG = SignInDSU.class.getSimpleName();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +57,7 @@ public class SignInDSU extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if(!afterConsent) {
+        if (!afterConsent) {
             mGoogleApiClient.connect();
         }
         afterConsent = false;
@@ -79,7 +78,7 @@ public class SignInDSU extends ActionBarActivity implements
 
     }
 
-    public void fail(final int reason){
+    public void fail(final int reason) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -107,16 +106,17 @@ public class SignInDSU extends ActionBarActivity implements
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-        if(result.hasResolution()){
+        if (result.hasResolution()) {
             try {
                 result.startResolutionForResult(this, REQUEST_RESOLVE_ERROR);
             } catch (IntentSender.SendIntentException e) {
 
                 fail(FAILED_TO_GET_AUTH_CODE);
             }
-        }else {
+        } else {
             fail(FAILED_TO_GET_AUTH_CODE);
         }
         fail(FAILED_TO_GET_AUTH_CODE);
@@ -135,66 +135,60 @@ public class SignInDSU extends ActionBarActivity implements
     private class SignIn extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
-
+        protected Void doInBackground(Void... _) {
 
             // ** Step 1. Obtain Google One-Time Auth Code **
             Bundle appActivities = new Bundle();
-            String clientId = getString(R.string.dsu_google_client_id);
-            String authScope = getString(R.string.dsu_google_scope);
-            String scopes = "oauth2:server:client_id:" + clientId +
-                            ":api_scope:" + authScope;
+            String scopes = "oauth2:email";
 
             try {
 
                 String code = GoogleAuthUtil.getToken(
-                        org.ohmage.funf.SignInDSU.this,                             // Context context
+                        SignInDSU.this,                             // Context context
                         Plus.AccountApi.getAccountName(mGoogleApiClient),  // String accountName
                         scopes,                                            // String scope
                         appActivities                                      // Bundle bundle
                 );
-                // Clear the token cache so that we will get a new one next time
-                GoogleAuthUtil.clearToken(org.ohmage.funf.SignInDSU.this, code);
+                Response response = DSUClient.signin(code);
+                if(response.isSuccessful()){
+                    try {
+                        JSONObject token = new JSONObject(response.body().string());
+                        final String accessToken = token.getString(DSUAuth.ACCESS_TOKEN_TYPE);
+                        final String refreshToken = token.getString(DSUAuth.REFRESH_TOKEN_TYPE);
+                        // Get an instance of the Android account manager
+                        AccountManager accountManager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
 
-                code = "fromApp_" + code;
-                String codeUrl = getString(R.string.dsu_code)
-                                 + "?client_id="
-                                 + getString(R.string.dsu_client_id)
-                                 +"&code=" + code;
+                        accountManager.addAccountExplicitly(DSUAuth.ACCOUNT, null, null);
 
-            // ** Step 2. Submit this code to DSU **
+                        // make the account syncable and automatically synced
+                        ContentResolver.setIsSyncable(DSUAuth.ACCOUNT, ContextContentProvider.AUTHORITY, 1);
+                        ContentResolver.setSyncAutomatically(DSUAuth.ACCOUNT, ContextContentProvider.AUTHORITY, true);
+                        ContentResolver.setMasterSyncAutomatically(true);
 
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpGet signin = new HttpGet(codeUrl);
-                signin.setHeader(new BasicHeader("Authorization", "Basic " + getString(R.string.dsu_client_auth)));
-                HttpResponse res = httpclient.execute(signin);
-                // Check if sign-in succeeded
-                if (res.getStatusLine().getStatusCode() != 200) {
-                    throw new Exception("Fail to sign in DSU");
-                }
+                        accountManager.setAuthToken(DSUAuth.ACCOUNT, "access_token", accessToken);
+                        accountManager.setAuthToken(DSUAuth.ACCOUNT, "refresh_token", refreshToken);
 
-             // ** Step 3. Check Returned Access Tokens **
-
-                String response = EntityUtils.toString(res.getEntity());
-                final JSONObject token = new JSONObject(response);
-                if(token.has("access_token") && token.has("refresh_token")) {
-                    final String accessToken = token.getString("access_token");
-                    final String refreshToken = token.getString("refresh_token");
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent i = new Intent();
-                            i.putExtra("access_token", accessToken);
-                            i.putExtra("refresh_token", refreshToken);
-
-                            org.ohmage.funf.SignInDSU.this.setResult(SIGN_IN_SUCCEEDED, i);
-                            org.ohmage.funf.SignInDSU.this.finish();
-                        }
-                    });
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent i = new Intent();
+                                i.putExtra(AccountManager.KEY_ACCOUNT_NAME, DSUAuth.ACCOUNT.name);
+                                i.putExtra(AccountManager.KEY_ACCOUNT_TYPE, DSUAuth.ACCOUNT.type);
+                                SignInDSU.this.setAccountAuthenticatorResult(i.getExtras());
+                                setResult(RESULT_OK);
+                                finish();
+                            }
+                        });
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Fail to parse response from google-sign-in endpoint", e);
+                        fail(INVALID_ACCESS_TOKEN);
+                    }
                 }else{
+                    Log.e(TAG, response.body().string());
                     fail(INVALID_ACCESS_TOKEN);
                 }
+
+                // ** Step 3. Check Returned Access Tokens **
 
             } catch (UserRecoverableAuthException e) {
                 // Requesting an authorization code will always throw

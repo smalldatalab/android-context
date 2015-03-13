@@ -3,7 +3,6 @@ package org.ohmage.funf;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import edu.mit.media.funf.FunfManager;
 
 public class Launcher extends BroadcastReceiver {
     public Launcher() {
