@@ -35,7 +35,10 @@ public class DSUSyncAdapter extends AbstractThreadedSyncAdapter{
             try {
                 AccountManager accountManager = (AccountManager) getContext().getSystemService(getContext().ACCOUNT_SERVICE);
                 List<ProbeObject> probes = ContextContentProvider.getAll(this.getContext());
+
                 String token = accountManager.blockingGetAuthToken(DSUAuth.ACCOUNT, DSUAuth.ACCESS_TOKEN_TYPE, true);
+
+
                 for (ProbeObject probe : probes) {
                     JsonObject json = probe.getJson();
                     Log.i(TAG, "Try to Upload " + json.toString());

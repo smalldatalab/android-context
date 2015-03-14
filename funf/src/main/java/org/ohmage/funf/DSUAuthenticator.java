@@ -79,6 +79,9 @@ public class DSUAuthenticator extends AbstractAccountAuthenticator {
                     Response response = DSUClient.refreshToken(refreshTken);
                     JSONObject token = new JSONObject(response.body().string());
                     authToken = token.getString(DSUAuth.ACCESS_TOKEN_TYPE);
+                    String refreshToken = token.getString(DSUAuth.REFRESH_TOKEN_TYPE);
+                    am.setAuthToken(account, "access_token", authToken);
+                    am.setAuthToken(account, "refresh_token", refreshToken);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {

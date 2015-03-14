@@ -1,5 +1,7 @@
 package org.ohmage.funf;
 
+import android.util.Base64;
+
 import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -19,6 +21,8 @@ public class DSUClient {
     private static final String BASE_URL = "https://lifestreams.smalldata.io/dsu";
     public static final String CLIENT_ID = "io.smalldata.android.context";
     public static final String CLIENT_SECRET = "IcpeG1Fbg2";
+    public static final String CLIENT_AUTHORIZATION =
+            Base64.encodeToString((CLIENT_ID + ":" + CLIENT_SECRET).getBytes(), Base64.DEFAULT);
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final static OkHttpClient client = new OkHttpClient();
@@ -48,12 +52,11 @@ public class DSUClient {
 
     public static Response refreshToken(String refreshToken) throws IOException {
         RequestBody body = new FormEncodingBuilder()
-                .add("client_id", CLIENT_ID)
-                .add("client_secret", CLIENT_SECRET)
                 .add("grant_type", "refresh_token")
                 .add("refresh_token", refreshToken)
                 .build();
         Request request = new Request.Builder()
+                .header("Authorization", "Basic " + CLIENT_AUTHORIZATION)
                 .url(BASE_URL + "/oauth/token")
                 .post(body)
                 .build();
