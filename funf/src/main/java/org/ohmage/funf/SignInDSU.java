@@ -139,7 +139,7 @@ public class SignInDSU extends  AccountAuthenticatorActivity  implements
 
             // ** Step 1. Obtain Google One-Time Auth Code **
             Bundle appActivities = new Bundle();
-            String scopes = "oauth2:email";
+            String scopes = "oauth2:email profile";
 
             try {
 
