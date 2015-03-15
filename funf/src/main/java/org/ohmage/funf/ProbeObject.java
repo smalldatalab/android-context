@@ -30,7 +30,7 @@ public class ProbeObject {
     private static final JsonObject acquisitionProvenance;
     static {
         schemaIdJson = new JsonObject();
-        schemaIdJson.addProperty("namespace", "io.smalldata");
+        schemaIdJson.addProperty("namespace", "io.smalldatalab");
         schemaIdJson.addProperty("name","context");
         schemaIdJson.addProperty("version", "1.0");
         acquisitionProvenance = new JsonObject();
