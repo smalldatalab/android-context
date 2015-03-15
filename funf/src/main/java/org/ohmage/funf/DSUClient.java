@@ -41,9 +41,9 @@ public class DSUClient {
         RequestBody body = new FormEncodingBuilder()
                 .add("client_id", CLIENT_ID)
                 .add("client_secret", CLIENT_SECRET)
-                .add("google_access_token", googleToken).build();
+                .add("access_token", googleToken).build();
         Request request = new Request.Builder()
-                .url(BASE_URL + "/google-signin")
+                .url(BASE_URL + "/social-signin/google")
                 .post(body)
                 .build();
         return client.newCall(request).execute();
