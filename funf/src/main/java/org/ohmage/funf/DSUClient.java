@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class DSUClient {
     private static final String BASE_URL = "https://lifestreams.smalldata.io/dsu";
-    public static final String CLIENT_ID = "io.smalldata.android.context";
+    public static final String CLIENT_ID = "io.smalldatalab.android.context";
     public static final String CLIENT_SECRET = "IcpeG1Fbg2";
     public static final String CLIENT_AUTHORIZATION =
             Base64.encodeToString((CLIENT_ID + ":" + CLIENT_SECRET).getBytes(), Base64.DEFAULT);
